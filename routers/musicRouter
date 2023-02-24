@@ -25,16 +25,31 @@ router.get("/", async (request, response, next) => {
 // });
 
 router.use(express.json());
-router.post("/", async (req, res) => {
-  const { name, instrument } = req.body;
-  if ((name, instrument)) {
-    await Musician.create({
-      name: name,
-      instrument: instrument,
-    });
-    res.json("Post Successful!");
+router.post(
+  "/",
+  [
+    check("name").trim().not().isEmpty(),
+    check("instrument").trim().not().isEmpty(),
+    check("name").isLength({ min: 2, max: 75 }), // My name has more than 20 characters.
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    // If the validationResults returns any errors, then trigger a response
+    if (!errors.isEmpty()) {
+      res.json({ error: errors.array() });
+    } else {
+      // If data is valid, push it into the users array
+      const { name, instrument } = req.body;
+      if ((name, instrument)) {
+        await Musician.create({
+          name: name,
+          instrument: instrument,
+        });
+      }
+      res.json("Post Successful!");
+    }
   }
-});
+);
 
 router.use(express.json());
 router.put("/:id", async (req, res) => {
